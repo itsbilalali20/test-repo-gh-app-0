@@ -42,11 +42,14 @@ jobs:
           application_id: ${{ vars.GH_APPLICATION_ID }}  # Your GitHub App ID
           application_private_key: ${{ secrets.GH_APPLICATION_KEY }}  # Your GitHub App private key
 
-
+      - name: Log GitHub App Token details (Debug)
+        if: always()
+        run: |
+          echo "Generated GitHub App Token: ${{ steps.get_workflow_token.outputs.token }}"
 
       - name: Trigger workflow in test repository
-        uses: peter-evans/repository-dispatch@v3
         id: dispatch-trigger
+        uses: peter-evans/repository-dispatch@v3
         with: 
           token: ${{ steps.get_workflow_token.outputs.token }}  # Token obtained from GitHub App
           repository: itsbilalali20/test-repo-gh-app 
@@ -55,5 +58,13 @@ jobs:
             {
               "ENV": "${{ steps.determine-env.outputs.env }}"
             }
-      - name: Debug Dispatch
-        run: echo "Dispatch response: ${{ steps.dispatch-trigger.outputs.dispatch-response }}"
+
+      - name: Check for Dispatch Errors
+        if: failure()
+        run: |
+          echo "Dispatch failed, check the logs for details."
+        continue-on-error: true
+
+      - name: Success message
+        if: success()
+        run: echo "Workflow dispatched successfully to the target repository."
