@@ -53,7 +53,7 @@ jobs:
         with: 
           token: ${{ steps.get_workflow_token.outputs.token }}  # Token obtained from GitHub App
           repository: itsbilalali20/test-repo-gh-app 
-          event-type: workflow_dispatch  
+          event-type: Automation-wf 
           client-payload: |
             {
               "ENV": "${{ steps.determine-env.outputs.env }}"
