@@ -1,0 +1,48 @@
+name: Trigger CI/CD Workflow based on file changes
+
+on:
+  push:
+    branches:
+      - feature/trigger-compliancex-wf
+    paths:
+      - 'Templates/dev/eksscan.yaml'
+      - 'Templates/prod/wazuh.yaml'
+
+jobs:
+  trigger-external-workflow:
+    runs-on: ubuntu-latest
+
+    permissions:  
+      id-token: write   
+      contents: read    
+      actions: write    
+
+    steps:
+      - name: Checkout code with full history
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2  
+
+      - name: Determine environment based on changed files
+        id: determine-env
+        run: |
+          if git diff --name-only HEAD~1 | grep -q 'Templates/dev/'; then
+            echo "::set-output name=env::dev"
+          elif git diff --name-only HEAD~1 | grep -q 'Templates/prod/'; then
+            echo "::set-output name=env::prod"
+          else
+            echo "No matching environment found"
+            exit 1
+          fi
+
+
+      - name: Trigger workflow in ComplianceX repository
+        uses: peter-evans/repository-dispatch@v3
+        with: 
+          token: ${{ secrets.GITHUB_TOKEN }}  
+          repository: scaleops/ComplianceX  
+          event-type: workflow_dispatch  
+          client-payload: |
+            {
+              "ENV": "${{ steps.determine-env.outputs.env }}"
+            }
