@@ -34,13 +34,21 @@ jobs:
             echo "No matching environment found"
             exit 1
           fi
+          
+      - name: Get GitHub App Token
+        id: get_workflow_token
+        uses: peter-murray/workflow-application-token-action@v2
+        with:
+          application_id: ${{ vars.GH_APPLICATION_ID }}  # Your GitHub App ID
+          application_private_key: ${{ secrets.GH_APPLICATION_KEY }}  # Your GitHub App private key
 
 
-      - name: Trigger workflow in ComplianceX repository
+
+      - name: Trigger workflow in test repository
         uses: peter-evans/repository-dispatch@v3
         with: 
-          token: ${{ secrets.GITHUB_TOKEN }}  
-          repository: scaleops/ComplianceX  
+          token: ${{ steps.get_workflow_token.outputs.token }}  # Token obtained from GitHub App
+          repository: itsbilalali20/test-repo-gh-app 
           event-type: workflow_dispatch  
           client-payload: |
             {
