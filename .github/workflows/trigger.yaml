@@ -46,6 +46,7 @@ jobs:
 
       - name: Trigger workflow in test repository
         uses: peter-evans/repository-dispatch@v3
+        id: dispatch-trigger
         with: 
           token: ${{ steps.get_workflow_token.outputs.token }}  # Token obtained from GitHub App
           repository: itsbilalali20/test-repo-gh-app 
@@ -54,3 +55,5 @@ jobs:
             {
               "ENV": "${{ steps.determine-env.outputs.env }}"
             }
+      - name: Debug Dispatch
+        run: echo "Dispatch response: ${{ steps.dispatch-trigger.outputs.dispatch-response }}"
